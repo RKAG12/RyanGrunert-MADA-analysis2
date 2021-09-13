@@ -1,66 +1,76 @@
 ###############################
-# processing script
-#
-#this script loads the raw data, processes and cleans it 
-#and saves it as Rds file in the processed_data folder
+# Processing script for Botulism Data
+
 
 #load needed packages. make sure they are installed.
-library(readxl) #for loading Excel files
 library(dplyr) #for data processing
 library(here) #to set paths
+library(tidyverse) #all required data manipulation packages
+
 
 #path to data
 #note the use of the here() package and not absolute paths
-data_location <- here::here("data","raw_data","exampledata.xlsx")
+data_location <- here::here("data","raw_data","Botulism.csv")
 
 #load data. 
-#note that for functions that come from specific packages (instead of base R)
-# I often specify both package and function like so
-#package::function() that's not required one could just call the function
-#specifying the package makes it clearer where the function "lives",
-#but it adds typing. You can do it either way.
-rawdata <- readxl::read_excel(data_location)
+rawdata <- read.csv(data_location)
 
 #take a look at the data
 dplyr::glimpse(rawdata)
 
-#dataset is so small, we can print it to the screen.
-#that is often not possible.
+#This prints the rawdata so you can see the structure
 print(rawdata)
 
-# looks like we have measurements for height (in centimeters) and weight (in kilogram)
+######Exploring the Data
+summary(rawdata)
+# State                Year        BotType           ToxinType        
+# Length:2280        Min.   :1899   Length:2280        Length:2280       
+# Class :character   1st Qu.:1976   Class :character   Class :character  
+# Mode  :character   Median :1993   Mode  :character   Mode  :character  
+# Mean   :1986                                        
+# 3rd Qu.:2006                                        
+# Max.   :2017                                        
+# Count       
+# Min.   : 1.000  
+# 1st Qu.: 1.000  
+# Median : 1.000  
+# Mean   : 3.199  
+# 3rd Qu.: 3.000  
+# Max.   :59.000  
 
-# there are some problems with the data: 
-# There is an entry which says "sixty" instead of a number. 
-# Does that mean it should be a numeric 60? It somehow doesn't make
-# sense since the weight is 60kg, which can't happen for a 60cm person (a baby)
-# Since we don't know how to fix this, we need to remove the person.
-# This "sixty" entry also turned all Height entries into characters instead of numeric.
-# We need to fix that too.
-# Then there is one person with a height of 6. 
-# that could be a typo, or someone mistakenly entered their height in feet.
-# Since we unfortunately don't know, we'll have to remove this person.
-# similarly, there is a person with weight of 7000, which is impossible,
-# and one person with missing weight.
-# to be able to analyze the data, we'll remove those 5 individuals
+unique(rawdata$BotType)
+# [1] "Foodborne" "Infant"    "Wound"     "Other"   
+#These are the different botulism types
 
-# this is one way of doing it. Note that if the data gets updated, 
-# we need to decide if the thresholds are ok (newborns could be <50)
+unique(rawdata$ToxinType)
+# [1] "Unknown" "E"       "B"       "A"       "F"       "A&B"     "AB"     
+# [8] "Ba"      "Bf"      "E,F"     "ABE"     "Ab"      "B/F"     "A/B/E"  
+#These are the different toxin types detected
 
-processeddata <- rawdata %>% dplyr::filter( Height != "sixty" ) %>% 
-                             dplyr::mutate(Height = as.numeric(Height)) %>% 
-                             dplyr::filter(Height > 50 & Weight < 1000)
+#Raw data is formatted correctly, just need to abbreviate some aspects to make analysis easier
 
-# save data as RDS
-# I suggest you save your processed and cleaned data as RDS or RDA/Rdata files. 
-# This preserves coding like factors, characters, numeric, etc. 
-# If you save as CSV, that information would get lost.
-# See here for some suggestions on how to store your processed data:
-# http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
+rawdata$BotType <- strtrim(rawdata$BotType, 1) 
+#This abbreviates the BotType column to just the first letter for easier manipulation
+
+rawdata[rawdata == "Unknown"] <- NA
+#This replaces all the "Unknown" values in the ToxinType column with an NA value
+
+processeddata <- rawdata
+#this includes the processed data for part two
 
 # location to save file
-save_data_location <- here::here("data","processed_data","processeddata.rds")
+save_data_location <- here::here("data","processed_data","processeddataBot.rds")
 
+#Saves teh processeddata as an rds file for analysis
 saveRDS(processeddata, file = save_data_location)
+
+
+
+
+
+
+
+
+
 
 
