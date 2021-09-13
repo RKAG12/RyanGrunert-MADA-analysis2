@@ -7,6 +7,9 @@ library(dplyr) #for data processing
 library(here) #to set paths
 library(tidyverse) #all required data manipulation packages
 
+# #This dataset shows the frequency count of confirmed botulism cases in a 
+# specific state and year, while also showing the type of botulism detected
+# and the specific toxin the confirmed cases contained. 
 
 #path to data
 #note the use of the here() package and not absolute paths
@@ -54,6 +57,9 @@ rawdata$BotType <- strtrim(rawdata$BotType, 1)
 
 rawdata[rawdata == "Unknown"] <- NA
 #This replaces all the "Unknown" values in the ToxinType column with an NA value
+#Going to leave the NA values in the dataset, those observations are still
+#helpful in analyzing the dataset even though the Toxin type isn't known.
+
 
 processeddata <- rawdata
 #this includes the processed data for part two
@@ -61,7 +67,7 @@ processeddata <- rawdata
 # location to save file
 save_data_location <- here::here("data","processed_data","processeddataBot.rds")
 
-#Saves teh processeddata as an rds file for analysis
+#Saves the processeddata as an rds file for analysis
 saveRDS(processeddata, file = save_data_location)
 
 
