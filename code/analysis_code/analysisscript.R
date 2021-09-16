@@ -14,17 +14,14 @@ library(here) #for data loading/saving
 data_location <- here::here("data","processed_data","processeddataBot.rds")
 
 #load data. 
-mydata <- readRDS(data_location)
+df <- readRDS(data_location)
 
 ######################################
 #Data exploration/description
 ######################################
-#I'm using basic R commands here.
-#Lots of good packages exist to do more.
-#For instance check out the tableone or skimr packages
 
 #summarize data 
-mysummary = summary(mydata)
+mysummary = summary(df)
 
 #look at summary
 print(mysummary)
@@ -37,10 +34,14 @@ summary_df = data.frame(do.call(cbind, lapply(mydata, summary)))
 summarytable_file = here("results", "summarytable.rds")
 saveRDS(summary_df, file = summarytable_file)
 
+#######################################
+#Data Manipulation and Visualization
+#######################################
+#As part of the data analysis, could be a good idea know the behavior 
+# of Botulism cases in Georgia throught the years.
 
-#make a scatterplot of data
-#we also add a linear regression line to it
-p1 <- mydata %>% ggplot(aes(x=Height, y=Weight)) + geom_point() + geom_smooth(method='lm')
+GA <- df %>% filter(BotType=="F")
+
 
 #look at figure
 plot(p1)
