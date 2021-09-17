@@ -8,23 +8,22 @@
 library(ggplot2) #for plotting
 library(broom) #for cleaning up output from lm()
 library(here) #for data loading/saving
+library(dplyr) #for filters and %>%
+library(ggplot2)
 
 #path to data
 #note the use of the here() package and not absolute paths
 data_location <- here::here("data","processed_data","processeddataBot.rds")
 
 #load data. 
-mydata <- readRDS(data_location)
+df <- readRDS(data_location)
 
 ######################################
 #Data exploration/description
 ######################################
-#I'm using basic R commands here.
-#Lots of good packages exist to do more.
-#For instance check out the tableone or skimr packages
 
 #summarize data 
-mysummary = summary(mydata)
+mysummary = summary(df)
 
 #look at summary
 print(mysummary)
@@ -37,33 +36,55 @@ summary_df = data.frame(do.call(cbind, lapply(mydata, summary)))
 summarytable_file = here("results", "summarytable.rds")
 saveRDS(summary_df, file = summarytable_file)
 
+#######################################
+#Data Manipulation and Visualization
+#######################################
+#1) As part of the data analysis, could be a good idea know the behavior 
+# of Botulism cases in Georgia throught the years.
 
-#make a scatterplot of data
-#we also add a linear regression line to it
-p1 <- mydata %>% ggplot(aes(x=Height, y=Weight)) + geom_point() + geom_smooth(method='lm')
+GA <- df %>% filter(State=="Georgia")
 
-#look at figure
-plot(p1)
-
+#Visualization "Boltulism cases in Georgia (1943 - 2017)"
+install.packages("tidyverse")
+Plot_GA<-ggplot(GA, aes(x= Year, y= Count))+ geom_point()+
+  ggtitle("Boltulism cases in Georgia (1943 - 2017)") +
+  ylab("Count") +
+  xlab("Year")
+Plot_GA
 #save figure
-figure_file = here("results","resultfigure.png")
-ggsave(filename = figure_file, plot=p1) 
+Figure1 = here("results","resultfigure.png")
+ggsave(filename = Figure1, plot=Plot_GA) 
 
-######################################
-#Data fitting/statistical analysis
-######################################
+#2) What is the most common type of Botulism?
 
-# fit linear model
-lmfit <- lm(Weight ~ Height, mydata)  
+BT <- aggregate(Count ~ BotType, data = df, sum) 
 
-# place results from fit into a data frame with the tidy function
-lmtable <- broom::tidy(lmfit)
+Plot_BT <- ggplot(BT, aes(x=BotType , y=Count))+
+              geom_bar(stat= "identity") +
+              ggtitle("Frequency of Botulism Type") +
+              ylab("Count") +
+              xlab("BotType")
+Plot_BT
+#save figure
+Figure2 = here("results","resultfigure.png")
+ggsave(filename = Figure2, plot=Plot_BT) 
 
-#look at fit results
-print(lmtable)
+#BotType = I was the most common type of Botulism during the study.
 
-# save fit results table  
-table_file = here("results", "resulttable.rds")
-saveRDS(lmtable, file = table_file)
+# 3) Top 5 of States with more cases
+cs <- aggregate (Count ~ State, data= df, sum) 
+B5<- arrange(cs, desc(Count)) 
+Btop5<- head(B5, 5)
+
+Plot_Btop5 <- ggplot(Btop5 , aes(x=State , y=Count))+
+  geom_bar(stat= "identity") +
+  ggtitle("Frequency of Botulism Type") +
+  ylab("Count") +
+  xlab("BotType")
+Plot_Btop5 
+#save figure
+Figure3 = here("results","resultfigure.png")
+ggsave(filename = Figure3, plot=Plot_BT) 
+
 
   
